@@ -1,8 +1,8 @@
 <template>
-  <div id="app">
+  <div id="app" class="title">
     <h1>都道府県の総人口推移</h1>
-    <Graph />
   </div>
+  <Graph />
 </template>
 
 <script>
@@ -14,3 +14,13 @@ export default {
   }
 };
 </script>
+
+<style scoped>
+#app {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100px;
+}
+</style>

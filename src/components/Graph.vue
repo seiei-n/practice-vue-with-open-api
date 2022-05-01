@@ -2,7 +2,11 @@
   <div>
     <h2>都道府県</h2>
     <div class="prefecture">
-      <label v-for="prefecture in st.prefectures" :key="prefecture.prefCode">
+      <label
+        v-for="prefecture in st.prefectures"
+        :key="prefecture.prefCode"
+        class="text"
+      >
         <input
           type="checkbox"
           :id="prefecture.prefCode"
@@ -154,5 +158,10 @@ export default {
 .prefecture {
   display: flex;
   flex-wrap: wrap;
+  margin-left: 5em;
+  margin-right: 5em;
+}
+.text {
+  width: 100px;
 }
 </style>
