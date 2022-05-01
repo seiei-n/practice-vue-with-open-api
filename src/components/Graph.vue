@@ -1,7 +1,6 @@
 <template>
   <div>
-    <h1>都道府県</h1>
-
+    <h2>都道府県</h2>
     <div class="prefecture">
       <label v-for="prefecture in st.prefectures" :key="prefecture.prefCode">
         <input
@@ -11,7 +10,6 @@
           @click="renderGraph(prefecture.prefCode, $event.target.checked)"
         />
         {{ prefecture.prefName }}
-        {{ prefecture.prefCode }}
       </label>
     </div>
     <highcharts :options="st.chartOptions"></highcharts>
@@ -22,7 +20,6 @@
 import { onMounted, reactive } from 'vue';
 import axios from 'axios';
 import { Chart } from 'highcharts-vue';
-// import Highcharts from 'highcharts';
 export default {
   components: {
     highcharts: Chart
@@ -40,33 +37,27 @@ export default {
       prefname: null,
       prefcode: null,
       chartOptions: [],
-
       checked: false,
       response: null,
       years: []
     });
-    const logger = prefcode => {
-      console.log(prefcode);
-      getPopulation(prefcode);
-      console.log(st.populations);
-    };
 
     const getPref = async () => {
-      st.res = await axios.get(url + '/prefectures', {
+      st.response = await axios.get(url + '/prefectures', {
         headers: { 'X-API-KEY': api_key }
       });
-      st.prefectures = st.res.data.result;
+      st.prefectures = st.response.data.result;
     };
 
     const getyears = async () => {
-      st.res = await axios.get(
+      st.response = await axios.get(
         url + '/population/composition/perYear?cityCode=-&prefCode=1',
         {
           headers: { 'X-API-KEY': api_key }
         }
       );
-      for (let i = 0; i < st.res.data.result.data[0].data.length; i++) {
-        st.years.push(st.res.data.result.data[0].data[i].year);
+      for (let i = 0; i < st.response.data.result.data[0].data.length; i++) {
+        st.years.push(st.response.data.result.data[0].data[i].year);
       }
     };
 
@@ -86,26 +77,21 @@ export default {
     const renderGraph = (checkedpref, checked) => {
       if (checked) {
         addSeries(checkedpref);
-
-        // isChecked(checkedpref, checked);
         console.log(checkedpref);
-
         console.log(st.chartOptions);
-        console.log(st.years);
       } else {
-        // isChecked(checkedpref, checked);
         removeSeries(checkedpref);
         console.log(st.chartOptions.series);
       }
     };
 
     const addSeries = async checkedpref => {
-      let popu = [];
+      let populations = [];
 
-      await getPopulation(checkedpref, popu);
+      await getPopulation(checkedpref, populations);
       st.chartOptions.series.push({
         name: st.prefectures[checkedpref - 1].prefName,
-        data: popu
+        data: populations
       });
     };
     const removeSeries = checkedpref => {
@@ -113,15 +99,6 @@ export default {
         series => series.name !== st.prefectures[checkedpref - 1].prefName
       );
     };
-
-    // const isChecked = (checkedpref, checked) => {
-    //   if (checked) {
-    //     st.checkedpref.push(checkedpref);
-    //   } else {
-    //     st.checkedpref = st.checkedpref.filter(pref => pref !== checkedpref);
-    //     st.populations = null;
-    //   }
-    // };
 
     st.chartOptions = {
       series: [
@@ -132,7 +109,7 @@ export default {
       ],
       type: 'line',
       title: {
-        text: 'Population composition per year'
+        text: ''
       },
       legend: {
         align: 'right',
@@ -165,10 +142,7 @@ export default {
     };
     return {
       st,
-      logger,
       getPopulation,
-      // isChecked,
-
       getyears,
       renderGraph
     };
@@ -180,6 +154,5 @@ export default {
 .prefecture {
   display: flex;
   flex-wrap: wrap;
-  justify-content: space-between;
 }
 </style>
