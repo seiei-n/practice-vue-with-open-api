@@ -8,27 +8,30 @@
           type="checkbox"
           :id="prefecture.prefCode"
           :value="prefecture.prefCode"
-          @click="isChecked(prefecture.prefCode, $event.target.checked)"
+          @click="renderGraph(prefecture.prefCode, $event.target.checked)"
         />
         {{ prefecture.prefName }}
         {{ prefecture.prefCode }}
       </label>
     </div>
-    <vue-highcharts :options="chartOptions" />
+    <highcharts :options="st.chartOptions"></highcharts>
   </div>
 </template>
 
 <script>
-import VueHighcharts from 'vue3-highcharts';
-import { defineComponent, onMounted, reactive } from 'vue';
+import { onMounted, reactive } from 'vue';
 import axios from 'axios';
-export default defineComponent({
+import { Chart } from 'highcharts-vue';
+// import Highcharts from 'highcharts';
+export default {
   components: {
-    VueHighcharts
+    highcharts: Chart
   },
+
   setup() {
     onMounted(() => {
       getPref();
+      getyears();
     });
     const url = process.env.VUE_APP_URL;
     const api_key = process.env.VUE_APP_API_KEY;
@@ -36,9 +39,11 @@ export default defineComponent({
       prefectures: null,
       prefname: null,
       prefcode: null,
-      checkedpref: [],
-      populations: null,
-      checked: false
+      chartOptions: [],
+
+      checked: false,
+      response: null,
+      years: []
     });
     const logger = prefcode => {
       console.log(prefcode);
@@ -53,39 +58,128 @@ export default defineComponent({
       st.prefectures = st.res.data.result;
     };
 
-    const getPopulation = async prefcode => {
-      const res = await axios.get(
+    const getyears = async () => {
+      st.res = await axios.get(
+        url + '/population/composition/perYear?cityCode=-&prefCode=1',
+        {
+          headers: { 'X-API-KEY': api_key }
+        }
+      );
+      for (let i = 0; i < st.res.data.result.data[0].data.length; i++) {
+        st.years.push(st.res.data.result.data[0].data[i].year);
+      }
+    };
+
+    const getPopulation = async (prefcode, populations) => {
+      st.response = await axios.get(
         url + '/population/composition/perYear?cityCode=-&prefCode=' + prefcode,
 
         {
           headers: { 'X-API-KEY': api_key }
         }
       );
-      st.populations = res.data.result.data[0].data[0].value;
-    };
-
-    const isChecked = (checkedpref, checked) => {
-      if (checked) {
-        st.checkedpref.push(checkedpref);
-      } else {
-        st.checkedpref = st.checkedpref.filter(pref => pref !== checkedpref);
+      for (let j = 0; j < st.response.data.result.data[0].data.length; j++) {
+        populations.push(st.response.data.result.data[0].data[j].value);
       }
-
-      console.log(st.checkedpref);
-      console.log(checked);
     };
 
-    const renderGraph = () => {};
+    const renderGraph = (checkedpref, checked) => {
+      if (checked) {
+        addSeries(checkedpref);
 
-    const chartOptions = {};
+        // isChecked(checkedpref, checked);
+        console.log(checkedpref);
+
+        console.log(st.chartOptions);
+        console.log(st.years);
+      } else {
+        // isChecked(checkedpref, checked);
+        removeSeries(checkedpref);
+        console.log(st.chartOptions.series);
+      }
+    };
+
+    const addSeries = checkedpref => {
+      let popu = [];
+
+      getPopulation(checkedpref, popu);
+      st.chartOptions.series.push({
+        name: st.prefectures[checkedpref - 1].prefName,
+        data: popu
+      });
+    };
+    const removeSeries = checkedpref => {
+      st.chartOptions.series = st.chartOptions.series.filter(
+        series => series.name !== st.prefectures[checkedpref - 1].prefName
+      );
+    };
+
+    // const isChecked = (checkedpref, checked) => {
+    //   if (checked) {
+    //     st.checkedpref.push(checkedpref);
+    //   } else {
+    //     st.checkedpref = st.checkedpref.filter(pref => pref !== checkedpref);
+    //     st.populations = null;
+    //   }
+    // };
+
+    st.chartOptions = {
+      series: [
+        {
+          name: '都道府県',
+          data: []
+        }
+      ],
+      type: 'line',
+      title: {
+        text: 'Population composition per year'
+      },
+      legend: {
+        align: 'right',
+        verticalAlign: 'top',
+        layout: 'vertical'
+      },
+      xAxis: {
+        title: {
+          text: '年度'
+        },
+        categories: st.years
+      },
+      yAxis: { title: { text: '人口数' } },
+      responsive: {
+        rules: [
+          {
+            condition: {
+              maxWidth: 500
+            },
+            chartOptions: {
+              legend: {
+                layout: 'horizontal',
+                align: 'center',
+                verticalAlign: 'bottom'
+              }
+            }
+          }
+        ]
+      }
+    };
     return {
       st,
       logger,
       getPopulation,
-      isChecked,
-      renderGraph,
-      chartOptions
+      // isChecked,
+
+      getyears,
+      renderGraph
     };
   }
-});
+};
 </script>
+
+<style scoped>
+.prefecture {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+</style>
