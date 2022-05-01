@@ -99,10 +99,10 @@ export default {
       }
     };
 
-    const addSeries = checkedpref => {
+    const addSeries = async checkedpref => {
       let popu = [];
 
-      getPopulation(checkedpref, popu);
+      await getPopulation(checkedpref, popu);
       st.chartOptions.series.push({
         name: st.prefectures[checkedpref - 1].prefName,
         data: popu
