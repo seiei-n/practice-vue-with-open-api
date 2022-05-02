@@ -1,5 +1,7 @@
 # practice-vue-with-open-api
 
+https://practice-vue-with-open-api.netlify.app/
+
 ## Project setup
 ```
 yarn install
