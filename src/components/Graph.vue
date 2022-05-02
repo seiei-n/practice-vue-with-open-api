@@ -1,20 +1,22 @@
 <template>
   <div>
     <h2>都道府県</h2>
-    <div class="prefecture">
-      <label
-        v-for="prefecture in st.prefectures"
-        :key="prefecture.prefCode"
-        class="text"
-      >
-        <input
-          type="checkbox"
-          :id="prefecture.prefCode"
-          :value="prefecture.prefCode"
-          @click="renderGraph(prefecture.prefCode, $event.target.checked)"
-        />
-        {{ prefecture.prefName }}
-      </label>
+    <div class="form-group">
+      <div class="prefecture">
+        <label
+          v-for="prefecture in st.prefectures"
+          :key="prefecture.prefCode"
+          class="text"
+        >
+          <input
+            type="checkbox"
+            :id="prefecture.prefCode"
+            :value="prefecture.prefCode"
+            @click="renderGraph(prefecture.prefCode, $event.target.checked)"
+          />
+          {{ prefecture.prefName }}
+        </label>
+      </div>
     </div>
     <highcharts :options="st.chartOptions"></highcharts>
   </div>
@@ -122,11 +124,12 @@ export default {
       },
       xAxis: {
         title: {
-          text: '年度'
+          text: '年度',
+          align: 'high'
         },
         categories: st.years
       },
-      yAxis: { title: { text: '人口数' } },
+      yAxis: { title: { align: 'high', text: '人口数', rotation: 0 } },
       responsive: {
         rules: [
           {
@@ -160,8 +163,5 @@ export default {
   flex-wrap: wrap;
   margin-left: 5em;
   margin-right: 5em;
-}
-.text {
-  width: 100px;
 }
 </style>
